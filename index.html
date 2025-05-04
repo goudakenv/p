@@ -4,44 +4,46 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ポートフォリオ | 太田啓介</title>
+    <title>ポートフォリオ</title>
     <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body>
     <header>
-        <h1>太田啓介</h1>
-        <nav>
-            <a href="#about">自己紹介</a>
-            <a href="#skills">スキル</a>
-            <a href="#projects">プロジェクト</a>
-            <a href="#contact">お問い合わせ</a>
-        </nav>
+        <div class="header-content">
+            <h1>ポートフォリオ</h1>
+            <nav>
+                <a href="#about">自己紹介</a>
+                <a href="#skills">スキル</a>
+                <a href="#projects">プロジェクト</a>
+                <a href="#contact">お問い合わせ</a>
+            </nav>
+        </div>
     </header>
 
-    <section id="about">
+    <section id="about" class="section-about">
         <h2>自己紹介</h2>
         <p>
             元・航空自衛官で、退官後はWEB制作・システム開発の道へ。<br>
-            Adobeツールや動画編集の経験を活かしながら、Next.js・Swift・Java・Laravelなどを使った開発業務に携わってきました。<br>
+            Adobeツールや動画編集の経験を活かしながら、Next.js・Swift・Java・PHPなどを使った開発業務に携わってきました。<br>
             納期を守りつつも、柔軟な対応と正確な作業を強みとし、チームと連携した開発にも自信があります。
         </p>
     </section>
 
-    <section id="skills">
+    <section id="skills" class="section-skills">
         <h2>スキル</h2>
         <ul>
-            <li>HTML / CSS / Sass</li>
+            <li>HTML / CSS</li>
             <li>JavaScript / React / Next.js</li>
             <li>PHP / Laravel</li>
             <li>Java / Spring Boot（修正業務）</li>
             <li>Swift（iOSアプリ修正）</li>
-            <li>Git / GitHub / VS Code</li>
+            <li>GitHub</li>
             <li>Premiere Pro / PowerPoint（資料・動画制作）</li>
         </ul>
     </section>
 
-    <section id="projects">
+    <section id="projects" class="section-projects">
         <h2>プロジェクト</h2>
 
         <div class="project-card">
@@ -74,7 +76,7 @@
 
     </section>
 
-    <section id="contact">
+    <section id="contact" class="section-contact">
         <h2>お問い合わせ</h2>
         <form id="contact-form">
             <input type="text" name="name" placeholder="お名前" required />
