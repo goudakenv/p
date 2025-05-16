@@ -510,185 +510,225 @@
 
             <section id="contact" class="contact section jump-point">
                 <div class="util-title contact-title">
-                  <p class="util-title-text uppercase">contact</p>
+                    <p class="util-title-text uppercase">contact</p>
                 </div>
                 <div class="contact-inner inner">
-                  <p class="contact-inner-text">下記コンタクトフォームより<br class="is-sm">お気軽にご相談ください。</p>
-              
-                  <form id="contactForm" class="contact-form" novalidate>
-                    <dl class="contact-list">
-                      <div class="contact-item">
-                        <dt class="contact-item-title">
-                          <label for="your_name" class="contact-item-label">お名前<span class="required">*</span></label>
-                        </dt>
-                        <dd class="contact-item-input">
-                          <input size="40" maxlength="400" placeholder="山田 太郎" type="text" name="your_name" id="your_name" />
-                          <div class="error-message" id="error_your_name" style="color:red;"></div>
-                        </dd>
-                      </div>
-              
-                      <div class="contact-item">
-                        <dt class="contact-item-title">
-                          <label for="kana_name" class="contact-item-label">お名前(フリガナ)<span class="required">*</span></label>
-                        </dt>
-                        <dd class="contact-item-input">
-                          <input size="40" maxlength="400" placeholder="ヤマダ タロウ" type="text" name="kana_name" id="kana_name" />
-                          <div class="error-message" id="error_kana_name" style="color:red;"></div>
-                        </dd>
-                      </div>
-              
-                      <div class="contact-item">
-                        <dt class="contact-item-title">
-                          <label for="corp" class="contact-item-label">個人・会社・団体名<span class="required">*</span></label>
-                        </dt>
-                        <dd class="contact-item-input">
-                          <input size="40" maxlength="400" placeholder="会社名・団体名" type="text" name="corp" id="corp" />
-                          <div class="error-message" id="error_corp" style="color:red;"></div>
-                        </dd>
-                      </div>
-              
-                      <div class="contact-item">
-                        <dt class="contact-item-title">
-                          <label for="email" class="contact-item-label">メールアドレス<span class="required">*</span></label>
-                        </dt>
-                        <dd class="contact-item-input">
-                          <input size="40" maxlength="400" placeholder="example@gmail.com" type="email" name="email" id="email" />
-                          <div class="error-message" id="error_email" style="color:red;"></div>
-                        </dd>
-                      </div>
-              
-                      <div class="contact-item">
-                        <dt class="contact-item-title">依頼の種類<span class="required">*</span></dt>
-                        <dd class="contact-checkbox-input">
-                          <label><input type="checkbox" name="checkbox[]" value="HP制作" id="checkbox_hp" /> HP制作</label>
-                          <label><input type="checkbox" name="checkbox[]" value="HP修正" id="checkbox_fix" /> HP修正</label>
-                          <div class="error-message" id="error_checkbox" style="color:red;"></div>
-                        </dd>
-                      </div>
-              
-                      <div class="contact-item">
-                        <dt class="contact-item-title">
-                          <label for="cost" class="contact-item-label">ご予算<span class="required">*</span></label>
-                        </dt>
-                        <dd class="contact-item-input">
-                          <input size="40" maxlength="400" placeholder="〇 円 ～ 〇 円" type="text" name="cost" id="cost" />
-                          <div class="error-message" id="error_cost" style="color:red;"></div>
-                        </dd>
-                      </div>
-              
-                      <div class="contact-item">
-                        <dt class="contact-item-title">
-                          <label for="deadline" class="contact-item-label">ご希望納期<span class="required">*</span></label>
-                        </dt>
-                        <dd class="contact-item-input">
-                          <input size="40" maxlength="400" type="text" name="deadline" id="deadline" />
-                          <div class="error-message" id="error_deadline" style="color:red;"></div>
-                        </dd>
-                      </div>
-              
-                      <div class="contact-item">
-                        <dt class="contact-item-title">実績公開可否<span class="required">*</span></dt>
-                        <dd class="contact-radio-input">
-                          <label><input type="radio" name="radio" value="可能" /> 可能</label>
-                          <label><input type="radio" name="radio" value="不可" /> 不可</label>
-                          <div class="error-message" id="error_radio" style="color:red;"></div>
-                        </dd>
-                      </div>
-              
-                      <div class="contact-item">
-                        <dt class="contact-item-title">
-                          <label for="message" class="contact-item-label">お問い合わせ内容<span class="required">*</span></label>
-                        </dt>
-                        <dd class="contact-item-input">
-                          <textarea cols="40" rows="10" maxlength="2000" placeholder="問い合わせ内容をご入力ください" name="message" id="message"></textarea>
-                          <div class="error-message" id="error_message" style="color:red;"></div>
-                        </dd>
-                      </div>
-                    </dl>
-              
-                    <div class="submit util-footer">
-                      <button type="submit" class="button-submit util-btn">送信する</button>
-                    </div>
-                  </form>
+                    <p class="contact-inner-text">下記コンタクトフォームより<br class="is-sm">お気軽にご相談ください。</p>
+
+                    <form id="contactForm" class="contact-form" novalidate>
+                        <dl class="contact-list">
+                            <div class="contact-item">
+                                <dt class="contact-item-title">
+                                    <label for="your_name" class="contact-item-label">お名前<span
+                                            class="required">*</span></label>
+                                </dt>
+                                <dd class="contact-item-input">
+                                    <input size="40" maxlength="400" placeholder="山田 太郎" type="text" name="your_name"
+                                        id="your_name" />
+                                    <div class="error-message" id="error_your_name" style="color:red;"></div>
+                                </dd>
+                            </div>
+
+                            <div class="contact-item">
+                                <dt class="contact-item-title">
+                                    <label for="kana_name" class="contact-item-label">お名前(フリガナ)<span
+                                            class="required">*</span></label>
+                                </dt>
+                                <dd class="contact-item-input">
+                                    <input size="40" maxlength="400" placeholder="ヤマダ タロウ" type="text" name="kana_name"
+                                        id="kana_name" />
+                                    <div class="error-message" id="error_kana_name" style="color:red;"></div>
+                                </dd>
+                            </div>
+
+                            <div class="contact-item">
+                                <dt class="contact-item-title">
+                                    <label for="corp" class="contact-item-label">個人・会社・団体名<span
+                                            class="required">*</span></label>
+                                </dt>
+                                <dd class="contact-item-input">
+                                    <input size="40" maxlength="400" placeholder="会社名・団体名" type="text" name="corp"
+                                        id="corp" />
+                                    <div class="error-message" id="error_corp" style="color:red;"></div>
+                                </dd>
+                            </div>
+
+                            <div class="contact-item">
+                                <dt class="contact-item-title">
+                                    <label for="email" class="contact-item-label">メールアドレス<span
+                                            class="required">*</span></label>
+                                </dt>
+                                <dd class="contact-item-input">
+                                    <input size="40" maxlength="400" placeholder="example@gmail.com" type="email"
+                                        name="email" id="email" />
+                                    <div class="error-message" id="error_email" style="color:red;"></div>
+                                </dd>
+                            </div>
+
+                            <div class="contact-item">
+                                <dt class="contact-item-title">依頼の種類<span class="required">*</span></dt>
+                                <dd class="contact-checkbox-input">
+                                    <label><input type="checkbox" name="checkbox[]" value="HP制作" id="checkbox_hp" />
+                                        HP制作</label>
+                                    <label><input type="checkbox" name="checkbox[]" value="HP修正" id="checkbox_fix" />
+                                        HP修正</label>
+                                    <div class="error-message" id="error_checkbox" style="color:red;"></div>
+                                </dd>
+                            </div>
+
+                            <div class="contact-item">
+                                <dt class="contact-item-title">
+                                    <label for="cost" class="contact-item-label">ご予算<span
+                                            class="required">*</span></label>
+                                </dt>
+                                <dd class="contact-item-input">
+                                    <input size="40" maxlength="400" placeholder="〇 円 ～ 〇 円" type="text" name="cost"
+                                        id="cost" />
+                                    <div class="error-message" id="error_cost" style="color:red;"></div>
+                                </dd>
+                            </div>
+
+                            <div class="contact-item">
+                                <dt class="contact-item-title">
+                                    <label for="deadline" class="contact-item-label">ご希望納期<span
+                                            class="required">*</span></label>
+                                </dt>
+                                <dd class="contact-item-input">
+                                    <input size="40" maxlength="400" type="text" name="deadline" id="deadline" />
+                                    <div class="error-message" id="error_deadline" style="color:red;"></div>
+                                </dd>
+                            </div>
+
+                            <div class="contact-item">
+                                <dt class="contact-item-title">実績公開可否<span class="required">*</span></dt>
+                                <dd class="contact-radio-input">
+                                    <label><input type="radio" name="radio" value="可能" /> 可能</label>
+                                    <label><input type="radio" name="radio" value="不可" /> 不可</label>
+                                    <div class="error-message" id="error_radio" style="color:red;"></div>
+                                </dd>
+                            </div>
+
+                            <div class="contact-item">
+                                <dt class="contact-item-title">
+                                    <label for="message" class="contact-item-label">お問い合わせ内容<span
+                                            class="required">*</span></label>
+                                </dt>
+                                <dd class="contact-item-input">
+                                    <textarea cols="40" rows="10" maxlength="2000" placeholder="問い合わせ内容をご入力ください"
+                                        name="message" id="message"></textarea>
+                                    <div class="error-message" id="error_message" style="color:red;"></div>
+                                </dd>
+                            </div>
+                        </dl>
+
+                        <div class="submit util-footer">
+                            <button type="submit" class="button-submit util-btn">送信する</button>
+                        </div>
+                    </form>
                 </div>
-              </section>
-              
-              <script>
-                const form = document.getElementById('contactForm');
-              
-                form.addEventListener('submit', function(event) {
-                  event.preventDefault();
-              
-                  // エラーメッセージをリセット
-                  document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
-              
-                  let valid = true;
-              
-                  // 各項目をチェック
-                  if (!form.your_name.value.trim()) {
-                    document.getElementById('error_your_name').textContent = 'お名前を入力してください。';
-                    valid = false;
-                  }
-              
-                  if (!form.kana_name.value.trim()) {
-                    document.getElementById('error_kana_name').textContent = 'フリガナを入力してください。';
-                    valid = false;
-                  }
-              
-                  if (!form.corp.value.trim()) {
-                    document.getElementById('error_corp').textContent = '個人・会社・団体名を入力してください。';
-                    valid = false;
-                  }
-              
-                  if (!form.email.value.trim()) {
-                    document.getElementById('error_email').textContent = 'メールアドレスを入力してください。';
-                    valid = false;
-                  } else {
-                    // 簡易メール形式チェック
-                    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailPattern.test(form.email.value.trim())) {
-                      document.getElementById('error_email').textContent = '有効なメールアドレスを入力してください。';
-                      valid = false;
-                    }
-                  }
-              
-                  // チェックボックス（依頼の種類）1つ以上チェック必須
-                  const checkboxes = form.querySelectorAll('input[name="checkbox[]"]');
-                  if (![...checkboxes].some(chk => chk.checked)) {
-                    document.getElementById('error_checkbox').textContent = '依頼の種類を1つ以上選択してください。';
-                    valid = false;
-                  }
-              
-                  if (!form.cost.value.trim()) {
-                    document.getElementById('error_cost').textContent = 'ご予算を入力してください。';
-                    valid = false;
-                  }
-              
-                  if (!form.deadline.value.trim()) {
-                    document.getElementById('error_deadline').textContent = 'ご希望納期を入力してください。';
-                    valid = false;
-                  }
-              
-                  // ラジオボタン（実績公開可否）どちらか必須
-                  const radios = form.querySelectorAll('input[name="radio"]');
-                  if (![...radios].some(r => r.checked)) {
-                    document.getElementById('error_radio').textContent = '実績公開可否を選択してください。';
-                    valid = false;
-                  }
-              
-                  if (!form.message.value.trim()) {
-                    document.getElementById('error_message').textContent = 'お問い合わせ内容を入力してください。';
-                    valid = false;
-                  }
-              
-                  if (valid) {
-                    // ここでフォーム送信処理（Firebaseなど）に進む
-                    alert('送信できます（ここに送信処理を実装してください）');
-                    // form.submit(); // 本当に送信する場合
-                  }
-                });
-              </script>
-              
+            </section>
+
+          <script>
+  const form = document.getElementById('contactForm');
+
+  form.addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+
+    let valid = true;
+
+    if (!form.your_name.value.trim()) {
+      document.getElementById('error_your_name').textContent = 'お名前を入力してください。';
+      valid = false;
+    }
+    if (!form.kana_name.value.trim()) {
+      document.getElementById('error_kana_name').textContent = 'フリガナを入力してください。';
+      valid = false;
+    }
+    if (!form.corp.value.trim()) {
+      document.getElementById('error_corp').textContent = '個人・会社・団体名を入力してください。';
+      valid = false;
+    }
+    if (!form.email.value.trim()) {
+      document.getElementById('error_email').textContent = 'メールアドレスを入力してください。';
+      valid = false;
+    } else {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(form.email.value.trim())) {
+        document.getElementById('error_email').textContent = '有効なメールアドレスを入力してください。';
+        valid = false;
+      }
+    }
+    const checkboxes = form.querySelectorAll('input[name="checkbox[]"]');
+    if (![...checkboxes].some(chk => chk.checked)) {
+      document.getElementById('error_checkbox').textContent = '依頼の種類を1つ以上選択してください。';
+      valid = false;
+    }
+    if (!form.cost.value.trim()) {
+      document.getElementById('error_cost').textContent = 'ご予算を入力してください。';
+      valid = false;
+    }
+    if (!form.deadline.value.trim()) {
+      document.getElementById('error_deadline').textContent = 'ご希望納期を入力してください。';
+      valid = false;
+    }
+    const radios = form.querySelectorAll('input[name="radio"]');
+    if (![...radios].some(r => r.checked)) {
+      document.getElementById('error_radio').textContent = '実績公開可否を選択してください。';
+      valid = false;
+    }
+    if (!form.message.value.trim()) {
+      document.getElementById('error_message').textContent = 'お問い合わせ内容を入力してください。';
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    try {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js');
+      const { getFirestore, collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js');
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyB3QzOBknuvpVy1rcl9o2PJIsKjzcH6-Ko",
+        authDomain: "loginconnect-b3963.firebaseapp.com",
+        projectId: "loginconnect-b3963",
+        storageBucket: "loginconnect-b3963.appspot.com",
+        messagingSenderId: "362875108198",
+        appId: "1:362875108198:web:e94198275cbb42d6aca6a7",
+        measurementId: "G-THFPS2MKYJ"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      const data = {
+        your_name: form.your_name.value,
+        kana_name: form.kana_name.value,
+        corp: form.corp.value,
+        email: form.email.value,
+        checkbox: [...checkboxes].filter(chk => chk.checked).map(chk => chk.value),
+        cost: form.cost.value,
+        deadline: form.deadline.value,
+        radio: [...radios].find(r => r.checked).value,
+        message: form.message.value,
+        createdAt: new Date().toISOString()
+      };
+
+      await addDoc(collection(db, "contactForm"), data);
+
+      alert("お問い合わせありがとうございます。送信が完了しました。");
+      form.reset();
+
+    } catch (error) {
+      console.error("送信エラー:", error);
+      alert("送信に失敗しました。時間をおいて再度お試しください。");
+    }
+  });
+</script>
+
+
+
 
 
             <!-- Firebase App (the core Firebase SDK) -->
@@ -709,7 +749,7 @@
                 const app = initializeApp(firebaseConfig);
                 const db = getFirestore(app);
 
-                const form = document.querySelector("form.contact-form");
+                const form1 = document.querySelector("form.contact-form");
 
                 form.addEventListener("submit", async (e) => {
                     e.preventDefault();
