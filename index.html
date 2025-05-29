@@ -13,16 +13,11 @@
         <!-- SEO SIMPLE PACK 3.6.2 -->
         <title>太田啓介のポートフォリオ</title>
         <meta name="description" content="太田啓介のポートフォリオ">
-        <!-- <link rel="canonical" href="https://siroto-portfolio.com/"> -->
         <meta property="og:locale" content="ja_JP">
         <meta property="og:type" content="website">
-        <meta property="og:image" content="https://siroto-portfolio.com/wp-content/uploads/2025/03/ogp.jpg">
         <meta property="og:title" content="ポートフォリオ">
         <meta property="og:description" content="太田啓介のポートフォリオ">
-        <meta property="og:url" content="https://siroto-portfolio.com/">
         <meta property="og:site_name" content="太田啓介のポートフォリオ">
-        <meta name="twitter:card" content="summary">
-        <meta name="twitter:site" content="W_tasi331">
         <!-- / SEO SIMPLE PACK -->
 
         <style id='wp-emoji-styles-inline-css' type='text/css'>
@@ -125,13 +120,7 @@
         <meta property="og:type" content="article">
         <meta property="og:title" content="太田啓介のポートフォリオ">
         <meta property="og:description" content="">
-        <meta property="og:image"
-            content="https://siroto-portfolio.com/wp-content/themes/sirotos-portfolio/images/assets/ogp.jpg">
-        <meta property="og:url" content="https://siroto-portfolio.com/">
         <meta property="og:site_name" content="太田啓介のポートフォリオ">
-        <meta content="summary" name="twitter:card">
-        <meta content="@twitter_acount" name="twitter:site">
-
     </head>
 
     <body class="drawer drawer--right">
@@ -213,6 +202,8 @@
                         <li class="drawer-nav-item"><a class="drawer-menu-item header-nav-item-link"
                                 href="#skill">SKILL</a></li>
                         <li class="drawer-nav-item"><a class="drawer-menu-item header-nav-item-link"
+                                href="#work">WORK</a></li>
+                        <li class="drawer-nav-item"><a class="drawer-menu-item header-nav-item-link"
                                 href="#contact">CONTACT</a></li>
                         <li class="drawer-nav-item">
                             <a href="https://twitter.com/W_tasi331" class="drawer-menu-item header-nav-item-link"
@@ -231,6 +222,7 @@
                         <li class="header-nav-item"><a class="header-nav-link" href="#about">ABOUT</a></li>
                         <li class="header-nav-item"><a class="header-nav-link" href="#career">CAREER</a></li>
                         <li class="header-nav-item"><a class="header-nav-link" href="#skill">SKILL</a></li>
+                        <li class="header-nav-item"><a class="header-nav-link" href="#work">WORK</a></li>
                         <li class="header-nav-item"><a class="header-nav-link" href="#contact">CONTACT</a></li>
                         <!-- Twitterアイコン用liタグ（コメントアウトのまま保持） -->
                     </ul>
@@ -508,6 +500,47 @@
             <!-- /.about -->
 
 
+
+
+
+
+
+            <section id="work" class="work section jump-point">
+                <div class="util-title work-title">
+                    <p class="util-title-text uppercase">work</p>
+                </div>
+                <div class="work-inner inner">
+                    <ul class="work-list">                  
+                        <li class="work-item">
+                            <article>
+                                <a href="work.html" class="work-item-link">
+                                    <div class="work-item-body">
+                                        <div class="work-item-thumbnail"><img width="2200" height="1600"
+                                                src="https://siroto-portfolio.com/wp-content/uploads/2024/12/img-works-portfolio-1.png"
+                                                class="attachment-post-thumbnail size-post-thumbnail wp-post-image"
+                                                alt="" decoding="async"
+                                                srcset="https://siroto-portfolio.com/wp-content/uploads/2024/12/img-works-portfolio-1.png 2200w, https://siroto-portfolio.com/wp-content/uploads/2024/12/img-works-portfolio-1-300x218.png 300w, https://siroto-portfolio.com/wp-content/uploads/2024/12/img-works-portfolio-1-1024x745.png 1024w, https://siroto-portfolio.com/wp-content/uploads/2024/12/img-works-portfolio-1-768x559.png 768w, https://siroto-portfolio.com/wp-content/uploads/2024/12/img-works-portfolio-1-1536x1117.png 1536w, https://siroto-portfolio.com/wp-content/uploads/2024/12/img-works-portfolio-1-2048x1489.png 2048w"
+                                                sizes="(max-width: 2200px) 100vw, 2200px" /></div>
+                                        <p class="work-item-title">ポートフォリオサイト</p>
+                                        <div class="work-item-category">
+                                            <span class="website">Website</span><span class="personal">自主制作</span>
+                                        </div>
+                                        <div class="work-item-tags">
+                                            HTML/CSS ｜ JQuery ｜ Js ｜ Sass ｜ Wordpress </div>
+                                    </div>
+                                </a>
+                            </article>
+                        </li>                
+                    </ul>
+            </section>
+            <!-- /.work -->
+
+
+
+
+
+
+
             <section id="contact" class="contact section jump-point">
                 <div class="util-title contact-title">
                     <p class="util-title-text uppercase">contact</p>
@@ -628,104 +661,104 @@
                 </div>
             </section>
 
-          <script>
-  const form = document.getElementById('contactForm');
+            <script>
+                const form = document.getElementById('contactForm');
 
-  form.addEventListener('submit', async function(event) {
-    event.preventDefault();
+                form.addEventListener('submit', async function (event) {
+                    event.preventDefault();
 
-    document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+                    document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
 
-    let valid = true;
+                    let valid = true;
 
-    if (!form.your_name.value.trim()) {
-      document.getElementById('error_your_name').textContent = 'お名前を入力してください。';
-      valid = false;
-    }
-    if (!form.kana_name.value.trim()) {
-      document.getElementById('error_kana_name').textContent = 'フリガナを入力してください。';
-      valid = false;
-    }
-    if (!form.corp.value.trim()) {
-      document.getElementById('error_corp').textContent = '個人・会社・団体名を入力してください。';
-      valid = false;
-    }
-    if (!form.email.value.trim()) {
-      document.getElementById('error_email').textContent = 'メールアドレスを入力してください。';
-      valid = false;
-    } else {
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailPattern.test(form.email.value.trim())) {
-        document.getElementById('error_email').textContent = '有効なメールアドレスを入力してください。';
-        valid = false;
-      }
-    }
-    const checkboxes = form.querySelectorAll('input[name="checkbox[]"]');
-    if (![...checkboxes].some(chk => chk.checked)) {
-      document.getElementById('error_checkbox').textContent = '依頼の種類を1つ以上選択してください。';
-      valid = false;
-    }
-    if (!form.cost.value.trim()) {
-      document.getElementById('error_cost').textContent = 'ご予算を入力してください。';
-      valid = false;
-    }
-    if (!form.deadline.value.trim()) {
-      document.getElementById('error_deadline').textContent = 'ご希望納期を入力してください。';
-      valid = false;
-    }
-    const radios = form.querySelectorAll('input[name="radio"]');
-    if (![...radios].some(r => r.checked)) {
-      document.getElementById('error_radio').textContent = '実績公開可否を選択してください。';
-      valid = false;
-    }
-    if (!form.message.value.trim()) {
-      document.getElementById('error_message').textContent = 'お問い合わせ内容を入力してください。';
-      valid = false;
-    }
+                    if (!form.your_name.value.trim()) {
+                        document.getElementById('error_your_name').textContent = 'お名前を入力してください。';
+                        valid = false;
+                    }
+                    if (!form.kana_name.value.trim()) {
+                        document.getElementById('error_kana_name').textContent = 'フリガナを入力してください。';
+                        valid = false;
+                    }
+                    if (!form.corp.value.trim()) {
+                        document.getElementById('error_corp').textContent = '個人・会社・団体名を入力してください。';
+                        valid = false;
+                    }
+                    if (!form.email.value.trim()) {
+                        document.getElementById('error_email').textContent = 'メールアドレスを入力してください。';
+                        valid = false;
+                    } else {
+                        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailPattern.test(form.email.value.trim())) {
+                            document.getElementById('error_email').textContent = '有効なメールアドレスを入力してください。';
+                            valid = false;
+                        }
+                    }
+                    const checkboxes = form.querySelectorAll('input[name="checkbox[]"]');
+                    if (![...checkboxes].some(chk => chk.checked)) {
+                        document.getElementById('error_checkbox').textContent = '依頼の種類を1つ以上選択してください。';
+                        valid = false;
+                    }
+                    if (!form.cost.value.trim()) {
+                        document.getElementById('error_cost').textContent = 'ご予算を入力してください。';
+                        valid = false;
+                    }
+                    if (!form.deadline.value.trim()) {
+                        document.getElementById('error_deadline').textContent = 'ご希望納期を入力してください。';
+                        valid = false;
+                    }
+                    const radios = form.querySelectorAll('input[name="radio"]');
+                    if (![...radios].some(r => r.checked)) {
+                        document.getElementById('error_radio').textContent = '実績公開可否を選択してください。';
+                        valid = false;
+                    }
+                    if (!form.message.value.trim()) {
+                        document.getElementById('error_message').textContent = 'お問い合わせ内容を入力してください。';
+                        valid = false;
+                    }
 
-    if (!valid) return;
+                    if (!valid) return;
 
-    try {
-      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js');
-      const { getFirestore, collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js');
+                    try {
+                        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js');
+                        const { getFirestore, collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js');
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyB3QzOBknuvpVy1rcl9o2PJIsKjzcH6-Ko",
-        authDomain: "loginconnect-b3963.firebaseapp.com",
-        projectId: "loginconnect-b3963",
-        storageBucket: "loginconnect-b3963.appspot.com",
-        messagingSenderId: "362875108198",
-        appId: "1:362875108198:web:e94198275cbb42d6aca6a7",
-        measurementId: "G-THFPS2MKYJ"
-      };
+                        const firebaseConfig = {
+                            apiKey: "AIzaSyB3QzOBknuvpVy1rcl9o2PJIsKjzcH6-Ko",
+                            authDomain: "loginconnect-b3963.firebaseapp.com",
+                            projectId: "loginconnect-b3963",
+                            storageBucket: "loginconnect-b3963.appspot.com",
+                            messagingSenderId: "362875108198",
+                            appId: "1:362875108198:web:e94198275cbb42d6aca6a7",
+                            measurementId: "G-THFPS2MKYJ"
+                        };
 
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
+                        const app = initializeApp(firebaseConfig);
+                        const db = getFirestore(app);
 
-      const data = {
-        your_name: form.your_name.value,
-        kana_name: form.kana_name.value,
-        corp: form.corp.value,
-        email: form.email.value,
-        checkbox: [...checkboxes].filter(chk => chk.checked).map(chk => chk.value),
-        cost: form.cost.value,
-        deadline: form.deadline.value,
-        radio: [...radios].find(r => r.checked).value,
-        message: form.message.value,
-        createdAt: new Date().toISOString()
-      };
+                        const data = {
+                            your_name: form.your_name.value,
+                            kana_name: form.kana_name.value,
+                            corp: form.corp.value,
+                            email: form.email.value,
+                            checkbox: [...checkboxes].filter(chk => chk.checked).map(chk => chk.value),
+                            cost: form.cost.value,
+                            deadline: form.deadline.value,
+                            radio: [...radios].find(r => r.checked).value,
+                            message: form.message.value,
+                            createdAt: new Date().toISOString()
+                        };
 
-      await addDoc(collection(db, "contactForm"), data);
+                        await addDoc(collection(db, "contactForm"), data);
 
-      alert("お問い合わせありがとうございます。送信が完了しました。");
-      form.reset();
+                        alert("お問い合わせありがとうございます。送信が完了しました。");
+                        form.reset();
 
-    } catch (error) {
-      console.error("送信エラー:", error);
-      alert("送信に失敗しました。時間をおいて再度お試しください。");
-    }
-  });
-</script>
+                    } catch (error) {
+                        console.error("送信エラー:", error);
+                        alert("送信に失敗しました。時間をおいて再度お試しください。");
+                    }
+                });
+            </script>
 
 
 
