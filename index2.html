@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ルームシェア清算メモ</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: #f0f4f8;
+            margin: 0;
+            padding: 2rem;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .amount {
+            font-weight: bold;
+            color: #1a73e8;
+        }
+
+        .paid {
+            color: green;
+        }
+
+        .section ul {
+            padding-left: 1.2rem;
+        }
+
+        .note {
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>ルームシェア清算メモ</h1>
+
+    <div class="card">
+        <h2>✅ 最新：2025/6/2 水道代</h2>
+        <div class="section">
+            <ul>
+                <li>総額：4,642円</li>
+                <li>折半：<span class="amount">2,321円</span></li>
+                <li class="paid">スケ → ナツに2,321円現金払い済み</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>✅ 5月分精算：家賃＆電気（5/12・5/14）</h2>
+        <div class="section">
+            <ul>
+                <li>家賃（ナツ）：104,853円</li>
+                <li>電気（ナツ）：3,267円</li>
+                <li>ガス（スケ）：3,640円</li>
+                <li>合計：108,120円 → 折半：<span class="amount">54,060円</span></li>
+                <li>ガス折半分：1,820円</li>
+                <li class="paid">スケ → ナツに52,240円支払い</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>✅ 4月分初回精算（〜4/12まで）</h2>
+        <div class="section">
+            <ul>
+                <li>家賃＋電気（ナツ）：110,120円 → 折半：<span class="amount">55,060円</span></li>
+                <li>スケが現金支払済：</li>
+                <ul>
+                    <li>水道：1,463 + 3,889 = 5,352円</li>
+                    <li>ガス：1,315 + 3,356 + 3,063 = 7,734円</li>
+                    <li>電気：14,762 + 13,537 = 28,299円</li>
+                </ul>
+                <li>合計：<span class="amount">41,385円</span></li>
+                <li>差し引き：55,060 - 41,385 = <span class="amount">13,675円</span></li>
+                <li>家具（棚）折半：4,598 ÷ 2 = 2,299円</li>
+                <li>合計支払額：<span class="amount">15,974円</span></li>
+                <li>実支払：20,000円 → <span class="paid">お釣り：1,574円 スケが受取</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🔜 今後のルール</h2>
+        <div class="section">
+            <ul>
+                <li>公共料金（水道・ガス・電気）はその都度折半</li>
+                <li>家具などは2人で購入したらその都度折半</li>
+                <li>支払者に現金で精算、または家賃から相殺</li>
+            </ul>
+            <p class="note">※家賃清算日は基本的に毎月12日前後</p>
+        </div>
+    </div>
+
+</body>
+
+</html>
