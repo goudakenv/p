@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ページング付きレスポンシブテーブル</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            min-width: 600px;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            table-layout: fixed;
+            /* 追加 */
+            word-wrap: break-word;
+            /* 追加 */
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        td {
+            white-space: pre-wrap;
+            /* 追加：改行と折返しを許可 */
+            word-break: break-word;
+            /* 長い単語の途中で折返し */
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .pagination a {
+            padding: 5px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+
+        .pagination a.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        /* レスポンシブ対応（スマホ） */
+        @media (max-width: 768px) {
+
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
+            }
+
+            thead {
+                display: none;
+            }
+
+            tr {
+                margin-bottom: 1rem;
+                border: 1px solid #ccc;
+                padding: 0.5rem;
+                border-radius: 8px;
+                background-color: #fafafa;
+            }
+
+            td {
+                position: relative;
+                padding-left: 50%;
+                border: none;
+                border-bottom: 1px solid #eee;
+            }
+
+            td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 45%;
+                padding-left: 10px;
+                font-weight: bold;
+                color: #333;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>ページング付きテーブル</h1>
+
+    <!-- ▼ 上部ページング -->
+    <div class="pagination">
+        <a href="#">前へ</a>
+        <a href="#" class="active">1</a>
+        <a href="#">次へ</a>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>送信日</th>
+                    <th>項目</th>
+                    <th>内容</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-label="ID">1</td>
+                    <td data-label="送信日">2025-06-01</td>
+                    <td data-label="項目">デスクトップ通知</td>
+                    <td data-label="内容">○○○○○○○○○○○○○○○○○○○○\n○○○○○○○○○○○○○○○○○○○○</td>
+                </tr>
+                <tr>
+                    <td data-label="ID">2</td>
+                    <td data-label="送信日">2025-06-02</td>
+                    <td data-label="項目">デスクトップ通知</td>
+                    <td data-label="内容">
+                        ○○○○○○○○○○○○○○○○○○○○\n○○○○○○○○○○○○○○○○○○○○\n○○○○○○○○○○○○○○○○○○○○\n○○○○○○○○○○○○○○○○○○○○</td>
+                </tr>
+                <tr>
+                    <td data-label="ID">3</td>
+                    <td data-label="送信日">2025-06-02</td>
+                    <td data-label="項目">デスクトップ通知</td>
+                    <td data-label="内容">○○○○○○○○○○○○○○○○○○○○\n○○○○○○○○○○○○○○○○○○○○</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ▼ 下部ページング -->
+    <div class="pagination">
+        <a href="#">前へ</a>
+        <a href="#" class="active">1</a>
+        <a href="#">次へ</a>
+    </div>
+</body>
+
+</html>
