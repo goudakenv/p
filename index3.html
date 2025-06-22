@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>ルームシェア清算メモ（履歴付き）</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            max-width: 750px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 6px;
+            font-size: 1em;
+            margin-top: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .result,
+        .history-item-details {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #eef;
+            border: 1px solid #99c;
+        }
+
+        .history {
+            margin-top: 30px;
+        }
+
+        .history-item {
+            margin-bottom: 10px;
+        }
+
+        .history-title {
+            font-weight: bold;
+            cursor: pointer;
+            background: #ddf;
+            padding: 5px;
+        }
+
+        .history-buttons {
+            margin-top: 10px;
+        }
+
+        .history-buttons button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>ルームシェア清算メモ（履歴保存対応）</h1>
+
+    <label>清算日<input type="text" id="date" placeholder="例：2025/6/22" /></label>
+    <label>家賃（ナツ）<input type="number" id="rent" value="104683" /></label>
+    <label>家賃支払日<input type="text" id="rentDate" placeholder="例：6/12" /></label>
+
+    <label>電気代（ナツ）<input type="number" id="electric" placeholder="例：3335" /></label>
+    <label>電気支払日<input type="text" id="electricDate" placeholder="例：6/12" /></label>
+
+    <label>ガス代（スケ）<input type="number" id="gas" placeholder="例：3535" /></label>
+    <label>ガス支払日<input type="text" id="gasDate" placeholder="例：6/10" /></label>
+
+    <label>水道代（誰かが払った）<input type="number" id="water" placeholder="例：4642" /></label>
+    <label>水道支払日<input type="text" id="waterDate" placeholder="例：6/2" /></label>
+    <label>水道の支払者
+        <select id="waterPayer">
+            <option value="suke">スケ</option>
+            <option value="natsu">ナツ</option>
+        </select>
+    </label>
+
+    <button id="calculateBtn" onclick="calculate()">計算して履歴に追加</button>
+    <button onclick="clearHistory()" style="background-color:#fdd; margin-left:10px;">履歴をすべて削除</button>
+
+    <div class="result" id="result" style="display:none;"></div>
+
+    <div class="history">
+        <h2>🗂 清算履歴</h2>
+        <div id="historyList"></div>
+    </div>
+
+    <script>
+        const historyList = document.getElementById("historyList");
+        const HISTORY_KEY = "roomshare-history";
+
+        // 編集中の履歴ID (nullなら新規)
+        let editingId = null;
+
+        function loadHistory() {
+            const saved = localStorage.getItem(HISTORY_KEY);
+            if (saved) {
+                const items = JSON.parse(saved);
+                items.forEach((item) => addHistoryItem(item, false));
+            }
+        }
+
+        function saveAllHistory(items) {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(items));
+        }
+
+        function saveHistoryItem(data) {
+            const saved = localStorage.getItem(HISTORY_KEY);
+            const items = saved ? JSON.parse(saved) : [];
+
+            // 編集モードなら更新、新規なら追加
+            if (data._id) {
+                const idx = items.findIndex((i) => i._id === data._id);
+                if (idx >= 0) {
+                    items[idx] = data;
+                } else {
+                    items.unshift(data);
+                }
+            } else {
+                data._id = "history-" + Date.now() + "-" + Math.random().toString(16).slice(2);
+                items.unshift(data);
+            }
+
+            saveAllHistory(items);
+        }
+
+        function clearHistory() {
+            if (confirm("本当に履歴をすべて削除しますか？")) {
+                localStorage.removeItem(HISTORY_KEY);
+                historyList.innerHTML = "";
+                editingId = null;
+                clearForm();
+                document.getElementById("result").style.display = "none";
+            }
+        }
+
+        function calculate() {
+            const data = {
+                date: document.getElementById("date").value || "(日付未記入)",
+                rent: Number(document.getElementById("rent").value) || 0,
+                rentDate: document.getElementById("rentDate").value || "-",
+                electric: Number(document.getElementById("electric").value) || 0,
+                electricDate: document.getElementById("electricDate").value || "-",
+                gas: Number(document.getElementById("gas").value) || 0,
+                gasDate: document.getElementById("gasDate").value || "-",
+                water: Number(document.getElementById("water").value) || 0,
+                waterDate: document.getElementById("waterDate").value || "-",
+                waterPayer: document.getElementById("waterPayer").value,
+            };
+
+            const totalShared = data.rent + data.electric;
+            const halfShared = totalShared / 2;
+            const halfGas = data.gas / 2;
+            const halfWater = data.water / 2;
+
+            let sukeToNatsu = halfShared - halfGas;
+            if (data.waterPayer === "suke") {
+                sukeToNatsu -= halfWater;
+            } else {
+                sukeToNatsu += halfWater;
+            }
+
+            data.resultHTML = `
+        📅 <strong>清算日：</strong>${data.date}<br>
+        ✅ 家賃：${data.rent.toLocaleString()}円（支払日：${data.rentDate}）<br>
+        ✅ 電気：${data.electric.toLocaleString()}円（支払日：${data.electricDate}）<br>
+        ✅ ガス：${data.gas.toLocaleString()}円（支払日：${data.gasDate}） → 折半：${halfGas.toLocaleString()}円<br>
+        ✅ 水道：${data.water.toLocaleString()}円（支払日：${data.waterDate} / 支払者：${data.waterPayer === "suke" ? "スケ" : "ナツ"}） → 折半：${halfWater.toLocaleString()}円<br>
+        <hr>
+        💰 スケ → ナツに支払う金額：<strong>${sukeToNatsu.toLocaleString()}円</strong>
+      `;
+
+            // 編集中なら更新、新規なら追加
+            if (editingId) {
+                data._id = editingId;
+                updateHistoryItem(data);
+                editingId = null;
+                document.getElementById("calculateBtn").textContent = "計算して履歴に追加";
+            } else {
+                addHistoryItem(data, true);
+            }
+
+            // 結果表示
+            document.getElementById("result").innerHTML = data.resultHTML;
+            document.getElementById("result").style.display = "block";
+
+            clearForm();
+        }
+
+        function addHistoryItem(data, save = true) {
+            // 保存時はID生成
+            if (!data._id) {
+                data._id = "history-" + Date.now() + "-" + Math.random().toString(16).slice(2);
+            }
+
+            // 履歴要素作成
+            const historyItem = document.createElement("div");
+            historyItem.className = "history-item";
+            historyItem.id = data._id;
+
+            historyItem.innerHTML = `
+        <div class="history-title" onclick="toggleDetails('${data._id}-details')">📅 ${data.date} の清算 ▼</div>
+        <div id="${data._id}-details" class="history-item-details" style="display:none;">
+          ${data.resultHTML}
+          <div class="history-buttons">
+            <button onclick="editHistoryItem('${data._id}')">編集</button>
+            <button onclick="deleteHistoryItem('${data._id}')">削除</button>
+          </div>
+        </div>
+      `;
+
+            historyList.prepend(historyItem);
+
+            if (save) {
+                saveHistoryItem(data);
+            }
+        }
+
+        function updateHistoryItem(data) {
+            // 履歴一覧を更新
+            const saved = localStorage.getItem(HISTORY_KEY);
+            let items = saved ? JSON.parse(saved) : [];
+
+            const index = items.findIndex((i) => i._id === data._id);
+            if (index >= 0) {
+                items[index] = data;
+                saveAllHistory(items);
+
+                // 表示も更新
+                const el = document.getElementById(data._id);
+                if (el) {
+                    el.querySelector(".history-title").textContent = `📅 ${data.date} の清算 ▼`;
+                    el.querySelector(`#${data._id}-details`).innerHTML = `
+                    ${data.resultHTML}
+                    <div class="history-buttons">
+                        <button onclick="editHistoryItem('${data._id}')">編集</button>
+                        <button onclick="deleteHistoryItem('${data._id}')">削除</button>
+                    </div>
+                    `;
+                }
+            }
+        }
+
+        function deleteHistoryItem(id) {
+            if (!confirm("この履歴を削除しますか？")) return;
+
+            // 画面から削除
+            const el = document.getElementById(id);
+            if (el) el.remove();
+
+            // ローカルストレージからも削除
+            const saved = localStorage.getItem(HISTORY_KEY);
+            if (saved) {
+                let items = JSON.parse(saved);
+                items = items.filter((item) => item._id !== id);
+                saveAllHistory(items);
+            }
+
+            // 編集中の削除だったらリセット
+            if (editingId === id) {
+                editingId = null;
+                clearForm();
+                document.getElementById("calculateBtn").textContent = "計算して履歴に追加";
+                document.getElementById("result").style.display = "none";
+            }
+        }
+
+        function editHistoryItem(id) {
+            const saved = localStorage.getItem(HISTORY_KEY);
+            if (!saved) return alert("履歴がありません。");
+
+            const items = JSON.parse(saved);
+            const item = items.find((i) => i._id === id);
+            if (!item) return alert("該当履歴が見つかりません。");
+
+            // フォームに値をセット
+            document.getElementById("date").value = item.date || "";
+            document.getElementById("rent").value = item.rent || 0;
+            document.getElementById("rentDate").value = item.rentDate || "";
+            document.getElementById("electric").value = item.electric || 0;
+            document.getElementById("electricDate").value = item.electricDate || "";
+            document.getElementById("gas").value = item.gas || 0;
+            document.getElementById("gasDate").value = item.gasDate || "";
+            document.getElementById("water").value = item.water || 0;
+            document.getElementById("waterDate").value = item.waterDate || "";
+            document.getElementById("waterPayer").value = item.waterPayer || "suke";
+
+            editingId = id;
+
+            document.getElementById("calculateBtn").textContent = "更新して保存";
+            document.getElementById("result").style.display = "none";
+
+            // スクロールでフォームへ誘導（お好みで）
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function clearForm() {
+            document.getElementById("date").value = "";
+            document.getElementById("rent").value = "";
+            document.getElementById("rentDate").value = "";
+            document.getElementById("electric").value = "";
+            document.getElementById("electricDate").value = "";
+            document.getElementById("gas").value = "";
+            document.getElementById("gasDate").value = "";
+            document.getElementById("water").value = "";
+            document.getElementById("waterDate").value = "";
+            document.getElementById("waterPayer").value = "suke";
+        }
+
+        function toggleDetails(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = el.style.display === "none" ? "block" : "none";
+        }
+
+        window.onload = loadHistory;
+    </script>
+</body>
+
+</html>
