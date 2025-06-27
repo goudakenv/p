@@ -4,6 +4,190 @@
 <head>
     <meta charset="UTF-8" />
     <title>ルームシェア清算メモ（履歴付き）</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            getDocs,
+            deleteDoc,
+            doc,
+            query,
+            orderBy,
+            limit
+        } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3QzOBknuvpVy1rcl9o2PJIsKjzcH6-Ko",
+            authDomain: "loginconnect-b3963.firebaseapp.com",
+            projectId: "loginconnect-b3963",
+            storageBucket: "loginconnect-b3963.appspot.com",
+            messagingSenderId: "362875108198",
+            appId: "1:362875108198:web:e94198275cbb42d6aca6a7",
+            measurementId: "G-THFPS2MKYJ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.firebaseDB = db;
+
+        // 直近のデータをフォームにセット
+        async function setLastDataToForm() {
+            const q = query(collection(db, "roomshare_history"), orderBy("timestamp", "desc"), limit(1));
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+                const data = snapshot.docs[0].data();
+                document.getElementById("date").value = data.date || "";
+                document.getElementById("rent").value = data.rent || "";
+                document.getElementById("rentDate").value = data.rentDate || "";
+                document.getElementById("electric").value = data.electric || "";
+                document.getElementById("electricDate").value = data.electricDate || "";
+                document.getElementById("gas").value = data.gas || "";
+                document.getElementById("gasDate").value = data.gasDate || "";
+                document.getElementById("water").value = data.water || "";
+                document.getElementById("waterDate").value = data.waterDate || "";
+                document.getElementById("waterPayer").value = data.waterPayer || "suke";
+            }
+        }
+
+        // 清算履歴の読み込み表示
+        async function loadHistory() {
+            const historyList = document.getElementById("historyList");
+            historyList.innerHTML = "";
+            const snapshot = await getDocs(query(collection(db, "roomshare_history"), orderBy("timestamp", "desc")));
+            snapshot.forEach(docSnap => {
+                const d = docSnap.data();
+
+                // 支払い差額計算（スケ→ナツに支払う額）
+                const total = d.rent + d.electric + d.gas + d.water;
+                const perPerson = total / 2;
+
+                // スケが支払った合計（ガス＋水道がスケ払いの場合）
+                const sukePaid = d.gas + (d.waterPayer === "suke" ? d.water : 0);
+
+                // ナツが支払った合計（家賃＋電気＋水道がナツ払いの場合）
+                const natsuPaid = d.rent + d.electric + (d.waterPayer === "natsu" ? d.water : 0);
+
+                // スケがナツに払うべき金額 = ナツが払うべき半額 - スケが既に払った金額
+                // （差額が正の場合はスケがナツに支払う。負ならナツがスケに支払うが今回はスケ→ナツのみ表示）
+                const diff = perPerson - sukePaid;
+
+                const diffStr = diff > 0 ? `スケはナツに ${diff.toFixed(0)} 円支払う必要があります。` : "スケは支払い不要（ナツの方が多く払っています）";
+
+                const div = document.createElement("div");
+                div.className = "history-item-details";
+                div.innerHTML = `
+                    <strong>${d.date}</strong><br>
+                    家賃（ナツ）：${d.rent}円（${d.rentDate}）<br>
+                    電気（ナツ）：${d.electric}円（${d.electricDate}）<br>
+                    ガス（スケ）：${d.gas}円（${d.gasDate}）<br>
+                    水道（${d.waterPayer === "suke" ? "スケ" : "ナツ"}）：${d.water}円（${d.waterDate}）<br>
+                    <b>合計：${total}円 / 1人分：${perPerson.toFixed(0)}円</b><br>
+                    <b>${diffStr}</b>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+
+        // 計算＆Firestoreに保存
+        document.getElementById("calculateBtn").addEventListener("click", async () => {
+            const date = document.getElementById("date").value;
+            if (!date) {
+                alert("清算日を入力してください");
+                return;
+            }
+
+            // 入力値取得
+            const rent = Number(document.getElementById("rent").value) || 0;
+            const rentDate = document.getElementById("rentDate").value || "";
+            const electric = Number(document.getElementById("electric").value) || 0;
+            const electricDate = document.getElementById("electricDate").value || "";
+            const gas = Number(document.getElementById("gas").value) || 0;
+            const gasDate = document.getElementById("gasDate").value || "";
+            const water = Number(document.getElementById("water").value) || 0;
+            const waterDate = document.getElementById("waterDate").value || "";
+            const waterPayer = document.getElementById("waterPayer").value;
+
+            // ガスはスケが全額支払い固定
+            // 電気はナツが全額支払い固定
+            // 水道は選択した支払者
+
+            // 合計計算
+            const total = rent + electric + gas + water;
+            const perPerson = total / 2;
+
+            // スケの支払い合計（ガス＋水道がスケのとき）
+            const sukePaid = gas + (waterPayer === "suke" ? water : 0);
+
+            // ナツの支払い合計（家賃＋電気＋水道がナツのとき）
+            const natsuPaid = rent + electric + (waterPayer === "natsu" ? water : 0);
+
+            // 差額（スケがナツに払う金額）
+            const diff = perPerson - sukePaid;
+
+            // Firestoreに保存
+            const data = {
+                date,
+                rent,
+                rentDate,
+                electric,
+                electricDate,
+                gas,
+                gasDate,
+                water,
+                waterDate,
+                waterPayer,
+                timestamp: new Date(),
+                total,
+                perPerson,
+                diff
+            };
+
+            await addDoc(collection(db, "roomshare_history"), data);
+            await setLastDataToForm();
+            await loadHistory();
+
+            // 計算結果表示
+            const resultDiv = document.getElementById("result");
+            if (diff > 0) {
+                resultDiv.textContent = `スケはナツに ${diff.toFixed(0)} 円支払う必要があります。`;
+            } else if (diff < 0) {
+                resultDiv.textContent = `ナツはスケに ${Math.abs(diff).toFixed(0)} 円支払う必要があります。`;
+            } else {
+                resultDiv.textContent = "支払いは均等です。";
+            }
+            resultDiv.style.display = "block";
+        });
+
+        // 履歴削除
+        window.clearHistory = async () => {
+            if (!confirm("履歴を全て削除しますか？")) return;
+            const snapshot = await getDocs(collection(db, "roomshare_history"));
+            const deletions = snapshot.docs.map(docSnap => deleteDoc(doc(db, "roomshare_history", docSnap.id)));
+            await Promise.all(deletions);
+            await loadHistory();
+
+            // フォームクリア
+            document.getElementById("result").style.display = "none";
+            document.getElementById("date").value = "";
+            document.getElementById("rent").value = "";
+            document.getElementById("rentDate").value = "";
+            document.getElementById("electric").value = "";
+            document.getElementById("electricDate").value = "";
+            document.getElementById("gas").value = "";
+            document.getElementById("gasDate").value = "";
+            document.getElementById("water").value = "";
+            document.getElementById("waterDate").value = "";
+            document.getElementById("waterPayer").value = "suke";
+        }
+
+        window.addEventListener("DOMContentLoaded", async () => {
+            await setLastDataToForm();
+            await loadHistory();
+        });
+
+    </script>
     <style>
         body {
             font-family: sans-serif;
@@ -31,35 +215,37 @@
             cursor: pointer;
         }
 
-        .result,
-        .history-item-details {
+        .row {
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+            flex-wrap: wrap;
             margin-top: 10px;
+        }
+
+        .row label {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        #result {
+            margin-top: 20px;
             padding: 10px;
-            background-color: #eef;
+            background: #cce;
             border: 1px solid #99c;
+            font-weight: bold;
         }
 
         .history {
             margin-top: 30px;
         }
 
-        .history-item {
-            margin-bottom: 10px;
-        }
-
-        .history-title {
-            font-weight: bold;
-            cursor: pointer;
-            background: #ddf;
-            padding: 5px;
-        }
-
-        .history-buttons {
-            margin-top: 10px;
-        }
-
-        .history-buttons button {
-            margin-right: 10px;
+        .history-item-details {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #eef;
+            border: 1px solid #99c;
+            white-space: pre-wrap;
         }
     </style>
 </head>
@@ -67,18 +253,28 @@
 <body>
     <h1>ルームシェア清算メモ（履歴保存対応）</h1>
 
-    <label>清算日<input type="text" id="date" placeholder="例：2025/6/22" /></label>
-    <label>家賃（ナツ）<input type="number" id="rent" value="104683" /></label>
-    <label>家賃支払日<input type="text" id="rentDate" placeholder="例：6/12" /></label>
+    <label>清算日<input type="date" id="date" /></label>
 
-    <label>電気代（ナツ）<input type="number" id="electric" placeholder="例：3335" /></label>
-    <label>電気支払日<input type="text" id="electricDate" placeholder="例：6/12" /></label>
+    <div class="row">
+        <label>家賃（ナツ）<input type="number" id="rent" /></label>
+        <label>支払日<input type="date" id="rentDate" /></label>
+    </div>
 
-    <label>ガス代（スケ）<input type="number" id="gas" placeholder="例：3535" /></label>
-    <label>ガス支払日<input type="text" id="gasDate" placeholder="例：6/10" /></label>
+    <div class="row">
+        <label>電気代（ナツ）<input type="number" id="electric" /></label>
+        <label>支払日<input type="date" id="electricDate" /></label>
+    </div>
 
-    <label>水道代（誰かが払った）<input type="number" id="water" placeholder="例：4642" /></label>
-    <label>水道支払日<input type="text" id="waterDate" placeholder="例：6/2" /></label>
+    <div class="row">
+        <label>ガス代（スケ）<input type="number" id="gas" /></label>
+        <label>支払日<input type="date" id="gasDate" /></label>
+    </div>
+
+    <div class="row">
+        <label>水道代<input type="number" id="water" /></label>
+        <label>支払日<input type="date" id="waterDate" /></label>
+    </div>
+
     <label>水道の支払者
         <select id="waterPayer">
             <option value="suke">スケ</option>
@@ -86,246 +282,15 @@
         </select>
     </label>
 
-    <button id="calculateBtn" onclick="calculate()">計算して履歴に追加</button>
+    <button id="calculateBtn">計算して履歴に追加</button>
     <button onclick="clearHistory()" style="background-color:#fdd; margin-left:10px;">履歴をすべて削除</button>
 
-    <div class="result" id="result" style="display:none;"></div>
+    <div id="result" style="display:none;"></div>
 
     <div class="history">
-        <h2>🗂 清算履歴</h2>
+        <h2>📂 清算履歴</h2>
         <div id="historyList"></div>
     </div>
-
-    <script>
-        const historyList = document.getElementById("historyList");
-        const HISTORY_KEY = "roomshare-history";
-
-        // 編集中の履歴ID (nullなら新規)
-        let editingId = null;
-
-        function loadHistory() {
-            const saved = localStorage.getItem(HISTORY_KEY);
-            if (saved) {
-                const items = JSON.parse(saved);
-                items.forEach((item) => addHistoryItem(item, false));
-            }
-        }
-
-        function saveAllHistory(items) {
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(items));
-        }
-
-        function saveHistoryItem(data) {
-            const saved = localStorage.getItem(HISTORY_KEY);
-            const items = saved ? JSON.parse(saved) : [];
-
-            // 編集モードなら更新、新規なら追加
-            if (data._id) {
-                const idx = items.findIndex((i) => i._id === data._id);
-                if (idx >= 0) {
-                    items[idx] = data;
-                } else {
-                    items.unshift(data);
-                }
-            } else {
-                data._id = "history-" + Date.now() + "-" + Math.random().toString(16).slice(2);
-                items.unshift(data);
-            }
-
-            saveAllHistory(items);
-        }
-
-        function clearHistory() {
-            if (confirm("本当に履歴をすべて削除しますか？")) {
-                localStorage.removeItem(HISTORY_KEY);
-                historyList.innerHTML = "";
-                editingId = null;
-                clearForm();
-                document.getElementById("result").style.display = "none";
-            }
-        }
-
-        function calculate() {
-            const data = {
-                date: document.getElementById("date").value || "(日付未記入)",
-                rent: Number(document.getElementById("rent").value) || 0,
-                rentDate: document.getElementById("rentDate").value || "-",
-                electric: Number(document.getElementById("electric").value) || 0,
-                electricDate: document.getElementById("electricDate").value || "-",
-                gas: Number(document.getElementById("gas").value) || 0,
-                gasDate: document.getElementById("gasDate").value || "-",
-                water: Number(document.getElementById("water").value) || 0,
-                waterDate: document.getElementById("waterDate").value || "-",
-                waterPayer: document.getElementById("waterPayer").value,
-            };
-
-            const totalShared = data.rent + data.electric;
-            const halfShared = totalShared / 2;
-            const halfGas = data.gas / 2;
-            const halfWater = data.water / 2;
-
-            let sukeToNatsu = halfShared - halfGas;
-            if (data.waterPayer === "suke") {
-                sukeToNatsu -= halfWater;
-            } else {
-                sukeToNatsu += halfWater;
-            }
-
-            data.resultHTML = `
-        📅 <strong>清算日：</strong>${data.date}<br>
-        ✅ 家賃：${data.rent.toLocaleString()}円（支払日：${data.rentDate}）<br>
-        ✅ 電気：${data.electric.toLocaleString()}円（支払日：${data.electricDate}）<br>
-        ✅ ガス：${data.gas.toLocaleString()}円（支払日：${data.gasDate}） → 折半：${halfGas.toLocaleString()}円<br>
-        ✅ 水道：${data.water.toLocaleString()}円（支払日：${data.waterDate} / 支払者：${data.waterPayer === "suke" ? "スケ" : "ナツ"}） → 折半：${halfWater.toLocaleString()}円<br>
-        <hr>
-        💰 スケ → ナツに支払う金額：<strong>${sukeToNatsu.toLocaleString()}円</strong>
-      `;
-
-            // 編集中なら更新、新規なら追加
-            if (editingId) {
-                data._id = editingId;
-                updateHistoryItem(data);
-                editingId = null;
-                document.getElementById("calculateBtn").textContent = "計算して履歴に追加";
-            } else {
-                addHistoryItem(data, true);
-            }
-
-            // 結果表示
-            document.getElementById("result").innerHTML = data.resultHTML;
-            document.getElementById("result").style.display = "block";
-
-            clearForm();
-        }
-
-        function addHistoryItem(data, save = true) {
-            // 保存時はID生成
-            if (!data._id) {
-                data._id = "history-" + Date.now() + "-" + Math.random().toString(16).slice(2);
-            }
-
-            // 履歴要素作成
-            const historyItem = document.createElement("div");
-            historyItem.className = "history-item";
-            historyItem.id = data._id;
-
-            historyItem.innerHTML = `
-        <div class="history-title" onclick="toggleDetails('${data._id}-details')">📅 ${data.date} の清算 ▼</div>
-        <div id="${data._id}-details" class="history-item-details" style="display:none;">
-          ${data.resultHTML}
-          <div class="history-buttons">
-            <button onclick="editHistoryItem('${data._id}')">編集</button>
-            <button onclick="deleteHistoryItem('${data._id}')">削除</button>
-          </div>
-        </div>
-      `;
-
-            historyList.prepend(historyItem);
-
-            if (save) {
-                saveHistoryItem(data);
-            }
-        }
-
-        function updateHistoryItem(data) {
-            // 履歴一覧を更新
-            const saved = localStorage.getItem(HISTORY_KEY);
-            let items = saved ? JSON.parse(saved) : [];
-
-            const index = items.findIndex((i) => i._id === data._id);
-            if (index >= 0) {
-                items[index] = data;
-                saveAllHistory(items);
-
-                // 表示も更新
-                const el = document.getElementById(data._id);
-                if (el) {
-                    el.querySelector(".history-title").textContent = `📅 ${data.date} の清算 ▼`;
-                    el.querySelector(`#${data._id}-details`).innerHTML = `
-                    ${data.resultHTML}
-                    <div class="history-buttons">
-                        <button onclick="editHistoryItem('${data._id}')">編集</button>
-                        <button onclick="deleteHistoryItem('${data._id}')">削除</button>
-                    </div>
-                    `;
-                }
-            }
-        }
-
-        function deleteHistoryItem(id) {
-            if (!confirm("この履歴を削除しますか？")) return;
-
-            // 画面から削除
-            const el = document.getElementById(id);
-            if (el) el.remove();
-
-            // ローカルストレージからも削除
-            const saved = localStorage.getItem(HISTORY_KEY);
-            if (saved) {
-                let items = JSON.parse(saved);
-                items = items.filter((item) => item._id !== id);
-                saveAllHistory(items);
-            }
-
-            // 編集中の削除だったらリセット
-            if (editingId === id) {
-                editingId = null;
-                clearForm();
-                document.getElementById("calculateBtn").textContent = "計算して履歴に追加";
-                document.getElementById("result").style.display = "none";
-            }
-        }
-
-        function editHistoryItem(id) {
-            const saved = localStorage.getItem(HISTORY_KEY);
-            if (!saved) return alert("履歴がありません。");
-
-            const items = JSON.parse(saved);
-            const item = items.find((i) => i._id === id);
-            if (!item) return alert("該当履歴が見つかりません。");
-
-            // フォームに値をセット
-            document.getElementById("date").value = item.date || "";
-            document.getElementById("rent").value = item.rent || 0;
-            document.getElementById("rentDate").value = item.rentDate || "";
-            document.getElementById("electric").value = item.electric || 0;
-            document.getElementById("electricDate").value = item.electricDate || "";
-            document.getElementById("gas").value = item.gas || 0;
-            document.getElementById("gasDate").value = item.gasDate || "";
-            document.getElementById("water").value = item.water || 0;
-            document.getElementById("waterDate").value = item.waterDate || "";
-            document.getElementById("waterPayer").value = item.waterPayer || "suke";
-
-            editingId = id;
-
-            document.getElementById("calculateBtn").textContent = "更新して保存";
-            document.getElementById("result").style.display = "none";
-
-            // スクロールでフォームへ誘導（お好みで）
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-
-        function clearForm() {
-            document.getElementById("date").value = "";
-            document.getElementById("rent").value = "";
-            document.getElementById("rentDate").value = "";
-            document.getElementById("electric").value = "";
-            document.getElementById("electricDate").value = "";
-            document.getElementById("gas").value = "";
-            document.getElementById("gasDate").value = "";
-            document.getElementById("water").value = "";
-            document.getElementById("waterDate").value = "";
-            document.getElementById("waterPayer").value = "suke";
-        }
-
-        function toggleDetails(id) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.style.display = el.style.display === "none" ? "block" : "none";
-        }
-
-        window.onload = loadHistory;
-    </script>
 </body>
 
 </html>
