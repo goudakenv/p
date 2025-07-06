@@ -9,11 +9,13 @@
             font-family: sans-serif;
             margin: 20px;
             max-width: 750px;
+            font-size: 14px;
         }
 
         label {
             display: block;
             margin-top: 10px;
+            font-weight: 600;
         }
 
         input,
@@ -22,26 +24,14 @@
             padding: 6px;
             font-size: 1em;
             margin-top: 5px;
+            box-sizing: border-box;
         }
 
         button {
             margin-top: 20px;
-            padding: 10px;
+            padding: 8px 12px;
             font-size: 1em;
             cursor: pointer;
-        }
-
-        .row {
-            display: flex;
-            gap: 20px;
-            align-items: flex-end;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-
-        .row label {
-            flex: 1;
-            min-width: 200px;
         }
 
         #result {
@@ -56,12 +46,53 @@
             margin-top: 30px;
         }
 
-        .history-item-details {
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #eef;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th,
+        td {
             border: 1px solid #99c;
-            white-space: pre-wrap;
+            padding: 6px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #dde;
+            font-weight: 600;
+        }
+
+        .pay-diff {
+            font-weight: 700;
+            color: #336;
+        }
+
+        /* 入力欄の横並び */
+        .row {
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .row label {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        /* 画面幅が狭い時の調整 */
+        @media (max-width: 600px) {
+            .row {
+                flex-direction: column;
+            }
+
+            .row label {
+                min-width: 100%;
+            }
         }
     </style>
     <script type="module">
@@ -71,8 +102,6 @@
             collection,
             addDoc,
             getDocs,
-            deleteDoc,
-            doc,
             query,
             orderBy
         } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
@@ -90,89 +119,186 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // フォームのidリスト
+        const inputIds = [
+            "date",
+            "rent",
+            "rentBillDate",
+            "rentDate",
+            "electric",
+            "electricBillDate",
+            "electricDate",
+            "gas",
+            "gasBillDate",
+            "gasDate",
+            "water",
+            "waterBillDate",
+            "waterDate",
+            "waterPayer"
+        ];
+
+        // ローカルストレージキー
+        const STORAGE_KEY = "roomshareFormData";
+
+        // フォームに値をセット
+        function loadFormData() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) return;
+            try {
+                const data = JSON.parse(saved);
+                inputIds.forEach(id => {
+                    if (data[id] !== undefined) {
+                        const el = document.getElementById(id);
+                        if (el) el.value = data[id];
+                    }
+                });
+            } catch (e) {
+                console.error("フォームデータの復元に失敗", e);
+            }
+        }
+
+        // フォームの値を保存
+        function saveFormData() {
+            const data = {};
+            inputIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) data[id] = el.value;
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
         async function loadHistory() {
             const historyList = document.getElementById("historyList");
             historyList.innerHTML = "";
-            const snapshot = await getDocs(query(collection(db, "roomshare_history"), orderBy("timestamp", "desc")));
+
+            const q = query(collection(db, "roomshare_history"), orderBy("date", "desc"));
+            const snapshot = await getDocs(q);
+
+            if (snapshot.empty) {
+                historyList.textContent = "履歴がありません。";
+                return;
+            }
+
+            const table = document.createElement("table");
+            const thead = document.createElement("thead");
+            thead.innerHTML = `
+        <tr>
+          <th>清算日</th>
+          <th>家賃<br>請求日 / 支払日</th>
+          <th>電気<br>請求日 / 支払日</th>
+          <th>ガス<br>請求日 / 支払日</th>
+          <th>水道<br>請求日 / 支払日</th>
+          <th>水道支払者</th>
+          <th>支払差額</th>
+        </tr>
+      `;
+            table.appendChild(thead);
+
+            const tbody = document.createElement("tbody");
+
             snapshot.forEach(docSnap => {
                 const d = docSnap.data();
-                const id = docSnap.id;
-                const total = d.rent + d.electric + d.gas + d.water;
-                const sukePaid = d.gas + (d.waterPayer === "suke" ? d.water : 0);
-                const diff = (total / 2) - sukePaid;
-                const diffStr = diff > 0 ? `スケはナツに ${diff.toFixed(0)} 円支払う必要があります。` : "スケは支払い不要（ナツの方が多く払っています）";
+                const total = (d.rent || 0) + (d.electric || 0) + (d.gas || 0) + (d.water || 0);
+                const sukePaid = (d.gas || 0) + (d.waterPayer === "suke" ? (d.water || 0) : 0);
+                const diff = total / 2 - sukePaid;
 
-                const div = document.createElement("div");
-                div.className = "history-item-details";
-                div.innerHTML = `
-          <strong>${d.date}</strong><br>
-          家賃（ナツ）：${d.rent}円<br>
-          請求日：${d.rentBillDate || "-"} / 支払日：${d.rentDate || "-"}<br>
-          電気（ナツ）：${d.electric}円<br>
-          請求日：${d.electricBillDate || "-"} / 支払日：${d.electricDate || "-"}<br>
-          ガス（スケ）：${d.gas}円<br>
-          請求日：${d.gasBillDate || "-"} / 支払日：${d.gasDate || "-"}<br>
-          水道（${d.waterPayer === "suke" ? "スケ" : "ナツ"}）：${d.water}円<br>
-          請求日：${d.waterBillDate || "-"} / 支払日：${d.waterDate || "-"}<br>
-          <b>${diffStr}</b><br>
-          <button onclick="deleteEntry('${id}')">削除</button>
+                let diffStr = "";
+                if (diff > 0) diffStr = `スケはナツに ${diff.toFixed(0)} 円`;
+                else if (diff < 0) diffStr = `ナツはスケに ${Math.abs(diff).toFixed(0)} 円`;
+                else diffStr = "均等";
+
+                const tr = document.createElement("tr");
+
+                tr.innerHTML = `
+          <td>${d.date || "-"}</td>
+          <td>${(d.rent || 0).toLocaleString()}<br>${d.rentBillDate || "-"} / ${d.rentDate || "-"}</td>
+          <td>${(d.electric || 0).toLocaleString()}<br>${d.electricBillDate || "-"} / ${d.electricDate || "-"}</td>
+          <td>${(d.gas || 0).toLocaleString()}<br>${d.gasBillDate || "-"} / ${d.gasDate || "-"}</td>
+          <td>${(d.water || 0).toLocaleString()}<br>${d.waterBillDate || "-"} / ${d.waterDate || "-"}</td>
+          <td>${d.waterPayer === "suke" ? "スケ" : "ナツ"}</td>
+          <td class="pay-diff">${diffStr}</td>
         `;
-                historyList.appendChild(div);
+
+                tbody.appendChild(tr);
             });
+
+            table.appendChild(tbody);
+            historyList.appendChild(table);
         }
 
-        window.deleteEntry = async (id) => {
-            if (!confirm("この履歴を削除しますか？")) return;
-            await deleteDoc(doc(db, "roomshare_history", id));
-            await loadHistory();
-        };
+        window.addEventListener("DOMContentLoaded", () => {
+            loadFormData(); // ページ読み込み時にフォーム復元
+            loadHistory();
 
-        document.getElementById("calculateBtn").addEventListener("click", async () => {
-            const getValue = id => document.getElementById(id).value;
-            const date = getValue("date");
-            if (!date) return alert("清算日を入力してください");
+            document.getElementById("calculateBtn").addEventListener("click", async () => {
+                const getValue = id => document.getElementById(id).value;
+                const date = getValue("date");
+                if (!date) return alert("清算日を入力してください");
 
-            const rent = Number(getValue("rent")) || 0;
-            const rentDate = getValue("rentDate");
-            const rentBillDate = getValue("rentBillDate");
-            const electric = Number(getValue("electric")) || 0;
-            const electricDate = getValue("electricDate");
-            const electricBillDate = getValue("electricBillDate");
-            const gas = Number(getValue("gas")) || 0;
-            const gasDate = getValue("gasDate");
-            const gasBillDate = getValue("gasBillDate");
-            const water = Number(getValue("water")) || 0;
-            const waterDate = getValue("waterDate");
-            const waterBillDate = getValue("waterBillDate");
-            const waterPayer = getValue("waterPayer");
+                const rent = Number(getValue("rent")) || 0;
+                const rentDate = getValue("rentDate");
+                const rentBillDate = getValue("rentBillDate");
+                const electric = Number(getValue("electric")) || 0;
+                const electricDate = getValue("electricDate");
+                const electricBillDate = getValue("electricBillDate");
+                const gas = Number(getValue("gas")) || 0;
+                const gasDate = getValue("gasDate");
+                const gasBillDate = getValue("gasBillDate");
+                const water = Number(getValue("water")) || 0;
+                const waterDate = getValue("waterDate");
+                const waterBillDate = getValue("waterBillDate");
+                const waterPayer = getValue("waterPayer");
 
-            const total = rent + electric + gas + water;
-            const perPerson = total / 2;
-            const sukePaid = gas + (waterPayer === "suke" ? water : 0);
-            const diff = perPerson - sukePaid;
+                const total = rent + electric + gas + water;
+                const perPerson = total / 2;
+                const sukePaid = gas + (waterPayer === "suke" ? water : 0);
+                const diff = perPerson - sukePaid;
 
-            const data = {
-                date, rent, rentDate, rentBillDate,
-                electric, electricDate, electricBillDate,
-                gas, gasDate, gasBillDate,
-                water, waterDate, waterBillDate,
-                waterPayer,
-                timestamp: new Date(),
-                total, perPerson, diff
-            };
+                const data = {
+                    date,
+                    rent,
+                    rentDate,
+                    rentBillDate,
+                    electric,
+                    electricDate,
+                    electricBillDate,
+                    gas,
+                    gasDate,
+                    gasBillDate,
+                    water,
+                    waterDate,
+                    waterBillDate,
+                    waterPayer,
+                    timestamp: new Date(),
+                    total,
+                    perPerson,
+                    diff
+                };
 
-            await addDoc(collection(db, "roomshare_history"), data);
-            await loadHistory();
+                await addDoc(collection(db, "roomshare_history"), data);
+                await loadHistory();
 
-            const resultDiv = document.getElementById("result");
-            resultDiv.textContent =
-                diff > 0 ? `スケはナツに ${diff.toFixed(0)} 円支払う必要があります。`
-                    : diff < 0 ? `ナツはスケに ${Math.abs(diff).toFixed(0)} 円支払う必要があります。`
-                        : "支払いは均等です。";
-            resultDiv.style.display = "block";
+                // 入力値保存
+                saveFormData();
+
+                const resultDiv = document.getElementById("result");
+                resultDiv.textContent =
+                    diff > 0
+                        ? `スケはナツに ${diff.toFixed(0)} 円支払う必要があります。`
+                        : diff < 0
+                            ? `ナツはスケに ${Math.abs(diff).toFixed(0)} 円支払う必要があります。`
+                            : "支払いは均等です。";
+                resultDiv.style.display = "block";
+            });
+
+            // 入力変更があったら自動保存（任意）
+            inputIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener("input", saveFormData);
+                }
+            });
         });
-
-        window.addEventListener("DOMContentLoaded", loadHistory);
     </script>
 </head>
 

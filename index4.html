@@ -53,6 +53,7 @@
             collection,
             getDocs,
             updateDoc,
+            deleteDoc,
             doc,
             query,
             orderBy
@@ -73,7 +74,10 @@
 
         async function loadAndEditHistory() {
             const container = document.getElementById("editContainer");
-            const snapshot = await getDocs(query(collection(db, "roomshare_history"), orderBy("timestamp", "desc")));
+            container.innerHTML = ""; // 初期化
+
+            // date（清算日）で降順ソート。timestampよりdate優先
+            const snapshot = await getDocs(query(collection(db, "roomshare_history"), orderBy("date", "desc")));
 
             snapshot.forEach(docSnap => {
                 const d = docSnap.data();
@@ -117,6 +121,8 @@
           </div>
 
           <button onclick="saveChanges('${id}')">保存</button>
+          <button onclick="deleteEntry('${id}')"
+            style="background-color: #e66; color: white; margin-left: 10px;">削除</button>
         `;
                 container.appendChild(div);
             });
@@ -157,6 +163,12 @@
 
             await updateDoc(doc(db, "roomshare_history", id), newData);
             alert("保存しました");
+        };
+
+        window.deleteEntry = async (id) => {
+            if (!confirm("この履歴を削除しますか？")) return;
+            await deleteDoc(doc(db, "roomshare_history", id));
+            await loadAndEditHistory();
         };
 
         window.addEventListener("DOMContentLoaded", loadAndEditHistory);
