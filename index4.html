@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>清算履歴編集</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            max-width: 750px;
+        }
+
+        label {
+            margin-right: 10px;
+        }
+
+        input[type="number"] {
+            width: 80px;
+        }
+
+        input[type="date"] {
+            width: 120px;
+            font-size: 0.9em;
+        }
+
+        select {
+            font-size: 0.9em;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+
+        .item {
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            background: #f9f9f9;
+        }
+
+        .field-group {
+            margin-bottom: 8px;
+        }
+    </style>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            getDocs,
+            updateDoc,
+            doc,
+            query,
+            orderBy
+        } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3QzOBknuvpVy1rcl9o2PJIsKjzcH6-Ko",
+            authDomain: "loginconnect-b3963.firebaseapp.com",
+            projectId: "loginconnect-b3963",
+            storageBucket: "loginconnect-b3963.appspot.com",
+            messagingSenderId: "362875108198",
+            appId: "1:362875108198:web:e94198275cbb42d6aca6a7",
+            measurementId: "G-THFPS2MKYJ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadAndEditHistory() {
+            const container = document.getElementById("editContainer");
+            const snapshot = await getDocs(query(collection(db, "roomshare_history"), orderBy("timestamp", "desc")));
+
+            snapshot.forEach(docSnap => {
+                const d = docSnap.data();
+                const id = docSnap.id;
+
+                const div = document.createElement("div");
+                div.className = "item";
+                div.innerHTML = `
+          <strong>${d.date}</strong><br>
+
+          <div class="field-group">
+            家賃: <input type="number" id="rent-${id}" value="${d.rent}" />
+            <label>請求日</label><input type="date" id="rentBillDate-${id}" value="${d.rentBillDate || ''}" />
+            <label>支払日</label><input type="date" id="rentDate-${id}" value="${d.rentDate || ''}" />
+          </div>
+
+          <div class="field-group">
+            電気: <input type="number" id="electric-${id}" value="${d.electric}" />
+            <label>請求日</label><input type="date" id="electricBillDate-${id}" value="${d.electricBillDate || ''}" />
+            <label>支払日</label><input type="date" id="electricDate-${id}" value="${d.electricDate || ''}" />
+          </div>
+
+          <div class="field-group">
+            ガス: <input type="number" id="gas-${id}" value="${d.gas}" />
+            <label>請求日</label><input type="date" id="gasBillDate-${id}" value="${d.gasBillDate || ''}" />
+            <label>支払日</label><input type="date" id="gasDate-${id}" value="${d.gasDate || ''}" />
+          </div>
+
+          <div class="field-group">
+            水道: <input type="number" id="water-${id}" value="${d.water}" />
+            <label>請求日</label><input type="date" id="waterBillDate-${id}" value="${d.waterBillDate || ''}" />
+            <label>支払日</label><input type="date" id="waterDate-${id}" value="${d.waterDate || ''}" />
+          </div>
+
+          <div class="field-group">
+            水道の支払者:
+            <select id="waterPayer-${id}">
+              <option value="suke" ${d.waterPayer === 'suke' ? 'selected' : ''}>スケ</option>
+              <option value="natsu" ${d.waterPayer === 'natsu' ? 'selected' : ''}>ナツ</option>
+            </select>
+          </div>
+
+          <button onclick="saveChanges('${id}')">保存</button>
+        `;
+                container.appendChild(div);
+            });
+        }
+
+        window.saveChanges = async (id) => {
+            const rent = Number(document.getElementById(`rent-${id}`).value) || 0;
+            const rentBillDate = document.getElementById(`rentBillDate-${id}`).value;
+            const rentDate = document.getElementById(`rentDate-${id}`).value;
+
+            const electric = Number(document.getElementById(`electric-${id}`).value) || 0;
+            const electricBillDate = document.getElementById(`electricBillDate-${id}`).value;
+            const electricDate = document.getElementById(`electricDate-${id}`).value;
+
+            const gas = Number(document.getElementById(`gas-${id}`).value) || 0;
+            const gasBillDate = document.getElementById(`gasBillDate-${id}`).value;
+            const gasDate = document.getElementById(`gasDate-${id}`).value;
+
+            const water = Number(document.getElementById(`water-${id}`).value) || 0;
+            const waterBillDate = document.getElementById(`waterBillDate-${id}`).value;
+            const waterDate = document.getElementById(`waterDate-${id}`).value;
+
+            const waterPayer = document.getElementById(`waterPayer-${id}`).value;
+
+            const total = rent + electric + gas + water;
+            const perPerson = total / 2;
+            const sukePaid = gas + (waterPayer === "suke" ? water : 0);
+            const diff = perPerson - sukePaid;
+
+            const newData = {
+                rent, rentBillDate, rentDate,
+                electric, electricBillDate, electricDate,
+                gas, gasBillDate, gasDate,
+                water, waterBillDate, waterDate,
+                waterPayer,
+                total, perPerson, diff
+            };
+
+            await updateDoc(doc(db, "roomshare_history", id), newData);
+            alert("保存しました");
+        };
+
+        window.addEventListener("DOMContentLoaded", loadAndEditHistory);
+    </script>
+</head>
+
+<body>
+    <h1>清算履歴編集ページ</h1>
+    <a href="/index3.html">戻る</a>
+    <div id="editContainer"></div>
+</body>
+
+</html>
