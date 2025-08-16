@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>ルームシェア清算メモ（履歴付き）</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            max-width: 750px;
+            font-size: 14px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 6px;
+            font-size: 1em;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 8px 12px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background: #cce;
+            border: 1px solid #99c;
+            font-weight: bold;
+        }
+
+        .history {
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            border: 1px solid #99c;
+            padding: 6px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #dde;
+            font-weight: 600;
+        }
+
+        .pay-diff {
+            font-weight: 700;
+            color: #336;
+        }
+
+        .row {
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .row label {
+            flex: 1;
+            min-width: 130px;
+        }
+
+        @media (max-width: 600px) {
+            .row {
+                flex-direction: column;
+            }
+
+            .row label {
+                min-width: 100%;
+            }
+        }
+    </style>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            getDocs,
+            query,
+            orderBy
+        } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3QzOBknuvpVy1rcl9o2PJIsKjzcH6-Ko",
+            authDomain: "loginconnect-b3963.firebaseapp.com",
+            projectId: "loginconnect-b3963",
+            storageBucket: "loginconnect-b3963.appspot.com",
+            messagingSenderId: "362875108198",
+            appId: "1:362875108198:web:e94198275cbb42d6aca6a7",
+            measurementId: "G-THFPS2MKYJ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const inputIds = [
+            "date", "settlementScheduledDate",
+            "rent", "rentBillStart", "rentBillEnd", "rentDate",
+            "electric", "electricBillStart", "electricBillEnd", "electricDate",
+            "gas", "gasBillStart", "gasBillEnd", "gasDate",
+            "water", "waterBillStart", "waterBillEnd", "waterDate",
+            "waterPayer"
+        ];
+
+        const STORAGE_KEY = "roomshareFormData";
+
+        function loadFormData() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) return;
+            try {
+                const data = JSON.parse(saved);
+                inputIds.forEach(id => {
+                    if (data[id] !== undefined) {
+                        const el = document.getElementById(id);
+                        if (el) el.value = data[id];
+                    }
+                });
+            } catch (e) {
+                console.error("フォームデータの復元に失敗", e);
+            }
+        }
+
+        function saveFormData() {
+            const data = {};
+            inputIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) data[id] = el.value;
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        async function loadHistory() {
+            const historyList = document.getElementById("historyList");
+            historyList.innerHTML = "";
+
+            const q = query(collection(db, "roomshare_history"), orderBy("date", "desc"));
+            const snapshot = await getDocs(q);
+
+            if (snapshot.empty) {
+                historyList.textContent = "履歴がありません。";
+                return;
+            }
+
+            const table = document.createElement("table");
+            const thead = document.createElement("thead");
+            thead.innerHTML = `
+        <tr>
+            <th>清算日</th>
+            <th>清算予定日</th>
+            <th>家賃<br>請求期間 / 支払日</th>
+            <th>電気<br>請求期間 / 支払日</th>
+            <th>ガス<br>請求期間 / 支払日</th>
+            <th>水道<br>請求期間 / 支払日</th>
+            <th>水道支払者</th>
+            <th>支払差額</th>
+        </tr>
+    `;
+            table.appendChild(thead);
+
+            const tbody = document.createElement("tbody");
+
+            snapshot.forEach(docSnap => {
+                const d = docSnap.data();
+                const waterCost = d.waterPayer === "both" ? 0 : (d.water || 0);
+                const total = (d.rent || 0) + (d.electric || 0) + (d.gas || 0) + waterCost;
+
+                let sukePaid = 0;
+                if (d.waterPayer === "suke") {
+                    sukePaid = (d.gas || 0) + (d.water || 0);
+                } else if (d.waterPayer === "natsu") {
+                    sukePaid = (d.gas || 0);
+                } else if (d.waterPayer === "both") {
+                    sukePaid = (d.gas || 0);
+                }
+
+                const diff = total / 2 - sukePaid;
+
+                let diffStr = "";
+                if (diff > 0) diffStr = `スケはナツに ${diff.toFixed(0)} 円`;
+                else if (diff < 0) diffStr = `ナツはスケに ${Math.abs(diff).toFixed(0)} 円`;
+                else diffStr = "均等";
+
+                const tr = document.createElement("tr");
+
+                tr.innerHTML = `
+            <td>${d.date || "-"}</td>
+            <td>${d.settlementScheduledDate || "-"}</td>
+            <td>${(d.rent || 0).toLocaleString()}<br>${d.rentBillStart || "-"}〜${d.rentBillEnd || "-"} / ${d.rentDate || "-"}</td>
+            <td>${(d.electric || 0).toLocaleString()}<br>${d.electricBillStart || "-"}〜${d.electricBillEnd || "-"} / ${d.electricDate || "-"}</td>
+            <td>${(d.gas || 0).toLocaleString()}<br>${d.gasBillStart || "-"}〜${d.gasBillEnd || "-"} / ${d.gasDate || "-"}</td>
+            <td>${(d.water || 0).toLocaleString()}<br>${d.waterBillStart || "-"}〜${d.waterBillEnd || "-"} / ${d.waterDate || "-"}</td>
+            <td>${d.waterPayer === "suke" ? "スケ" : d.waterPayer === "natsu" ? "ナツ" : "両方(割り勘)"}</td>
+            <td class="pay-diff">${diffStr}</td>
+        `;
+
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(tbody);
+            historyList.appendChild(table);
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            loadFormData();
+            loadHistory();
+
+            document.getElementById("calculateBtn").addEventListener("click", async () => {
+                const getValue = id => document.getElementById(id).value;
+                const date = getValue("date");
+                const settlementScheduledDate = getValue("settlementScheduledDate");
+                if (!settlementScheduledDate) return alert("清算予定日を入力してください");
+
+                const rent = Number(getValue("rent")) || 0;
+                const rentBillStart = getValue("rentBillStart");
+                const rentBillEnd = getValue("rentBillEnd");
+                const rentDate = getValue("rentDate");
+
+                const electric = Number(getValue("electric")) || 0;
+                const electricBillStart = getValue("electricBillStart");
+                const electricBillEnd = getValue("electricBillEnd");
+                const electricDate = getValue("electricDate");
+
+                const gas = Number(getValue("gas")) || 0;
+                const gasBillStart = getValue("gasBillStart");
+                const gasBillEnd = getValue("gasBillEnd");
+                const gasDate = getValue("gasDate");
+
+                const water = Number(getValue("water")) || 0;
+                const waterBillStart = getValue("waterBillStart");
+                const waterBillEnd = getValue("waterBillEnd");
+                const waterDate = getValue("waterDate");
+
+                const waterPayer = getValue("waterPayer");
+
+                const total = rent + electric + gas + (waterPayer === "both" ? 0 : water);
+                const perPerson = total / 2;
+
+                let sukePaid = 0;
+                if (waterPayer === "suke") {
+                    sukePaid = gas + water;
+                } else if (waterPayer === "natsu") {
+                    sukePaid = gas;
+                } else if (waterPayer === "both") {
+                    sukePaid = gas;
+                }
+
+                const diff = perPerson - sukePaid;
+
+                const data = {
+                    date,
+                    settlementScheduledDate,
+                    rent, rentBillStart, rentBillEnd, rentDate,
+                    electric, electricBillStart, electricBillEnd, electricDate,
+                    gas, gasBillStart, gasBillEnd, gasDate,
+                    water, waterBillStart, waterBillEnd, waterDate,
+                    waterPayer,
+                    timestamp: new Date(),
+                    total,
+                    perPerson,
+                    diff
+                };
+
+                await addDoc(collection(db, "roomshare_history"), data);
+                await loadHistory();
+
+                saveFormData();
+
+                const resultDiv = document.getElementById("result");
+                resultDiv.textContent =
+                    diff > 0
+                        ? `スケはナツに ${diff.toFixed(0)} 円支払う必要があります。`
+                        : diff < 0
+                            ? `ナツはスケに ${Math.abs(diff).toFixed(0)} 円支払う必要があります。`
+                            : "支払いは均等です。";
+                resultDiv.style.display = "block";
+            });
+
+            inputIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener("input", saveFormData);
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <h1>ルームシェア清算メモ（履歴保存対応）</h1>
+
+    <label>清算日<input type="date" id="date" /></label>
+    <label>清算予定日<input type="date" id="settlementScheduledDate" /></label>
+
+    <div class="row">
+        <label>家賃（１７０円追加済みの金額）<input type="number" id="rent" /></label>
+        <label>請求期間（開始）<input type="date" id="rentBillStart" /></label>
+        <label>請求期間（終了）<input type="date" id="rentBillEnd" /></label>
+        <label>支払日<input type="date" id="rentDate" /></label>
+    </div>
+
+    <div class="row">
+        <label>電気代（ナツクレジット）<input type="number" id="electric" /></label>
+        <label>請求期間（開始）<input type="date" id="electricBillStart" /></label>
+        <label>請求期間（終了）<input type="date" id="electricBillEnd" /></label>
+        <label>支払日<input type="date" id="electricDate" /></label>
+    </div>
+
+    <div class="row">
+        <label>ガス代（スケクレジット）<input type="number" id="gas" /></label>
+        <label>請求期間（開始）<input type="date" id="gasBillStart" /></label>
+        <label>請求期間（終了）<input type="date" id="gasBillEnd" /></label>
+        <label>支払日<input type="date" id="gasDate" /></label>
+    </div>
+
+    <div class="row">
+        <label>水道代（コンビニ現金払い）<input type="number" id="water" /></label>
+        <label>請求期間（開始）<input type="date" id="waterBillStart" /></label>
+        <label>請求期間（終了）<input type="date" id="waterBillEnd" /></label>
+        <label>支払日<input type="date" id="waterDate" /></label>
+    </div>
+
+    <label>水道の支払者
+        <select id="waterPayer">
+            <option value="suke">スケ</option>
+            <option value="natsu">ナツ</option>
+            <option value="both">どちらも現金で割り勘で払い支払い済み</option>
+        </select>
+    </label>
+
+    <button id="calculateBtn">計算して履歴に追加</button>
+
+    <div id="result" style="display:none;"></div>
+
+    <div class="history">
+        <a href="index4.html">編集</a>
+        <h2>📂 清算履歴</h2>
+        <div id="historyList"></div>
+    </div>
+</body>
+
+</html>
