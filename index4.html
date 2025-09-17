@@ -130,7 +130,9 @@
             <select id="waterPayer-${id}">
               <option value="suke" ${d.waterPayer === 'suke' ? 'selected' : ''}>スケ</option>
               <option value="natsu" ${d.waterPayer === 'natsu' ? 'selected' : ''}>ナツ</option>
-              <option value="both" ${d.waterPayer === 'both' ? 'selected' : ''}>どちらも現金で割り勘で払い支払い済み</option>
+              <option value="both_paid" ${d.waterPayer === 'both_paid' ? 'selected' : ''}>どちらも現金で割り勘で払い支払い済み</option>
+<option value="both_unpaid" ${d.waterPayer === 'both_unpaid' ? 'selected' : ''}>まだ納付書が届いてなく払い支払い予定</option>
+
             </select>
           </div>
 
@@ -170,7 +172,17 @@
             const total = rent + electric + gas + water;
             const perPerson = total / 2;
 
-            const sukePaid = waterPayer === "suke" ? gas + water : waterPayer === "natsu" ? gas : total / 2;
+            let sukePaid = 0;
+            if (waterPayer === "suke") {
+                sukePaid = gas + water;
+            } else if (waterPayer === "natsu") {
+                sukePaid = gas;
+            } else if (waterPayer === "both_paid") {
+                sukePaid = (gas + water) / 2;
+            } else if (waterPayer === "both_unpaid") {
+                sukePaid = 0;  // まだ納付書が届いていないため支払いはまだ
+            }
+
             const diff = perPerson - sukePaid;
 
             const newData = {
@@ -187,6 +199,7 @@
             await updateDoc(doc(db, "roomshare_history", id), newData);
             alert("保存しました");
         };
+
 
         window.deleteEntry = async (id) => {
             if (!confirm("この履歴を削除しますか？")) return;
